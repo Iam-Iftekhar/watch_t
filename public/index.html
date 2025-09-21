@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch.T</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles that don't use @apply */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .nav-link-active {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: #fff; /* text-white */
+        }
+        .nav-link-active:hover {
+            background-color: #2563eb; /* bg-blue-600 */
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #4a5568;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #6b7280;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white overflow-hidden">
+    <div id="app-container" class="flex flex-col h-screen">
+        <!-- Main Application Container -->
+        <header class="flex-shrink-0 bg-gray-800 shadow-md">
+            <nav class="flex items-center justify-between p-4">
+                <a href="#" class="text-2xl font-bold text-blue-500">Watch.T</a>
+                <div class="flex items-center space-x-4">
+                    <div class="nav-link flex items-center justify-center p-2 rounded-lg transition-colors duration-200 hover:bg-gray-700 cursor-pointer" id="home-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </div>
+                    <div class="nav-link flex items-center justify-center p-2 rounded-lg transition-colors duration-200 hover:bg-gray-700 cursor-pointer hidden" id="profile-link">
+                        <!-- Profile pic or icon will be here -->
+                        <img id="profile-pic" src="" alt="Profile" class="h-6 w-6 rounded-full hidden">
+                        <svg id="profile-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                    <div class="nav-link flex items-center justify-center p-2 rounded-lg transition-colors duration-200 hover:bg-gray-700 cursor-pointer" id="watch-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h1.033A5.027 5.027 0 0012 18m-7 0a5.027 5.027 0 016.967 0M5 18v-4m6 4v-4m-6 0h6m6 0a3.027 3.027 0 00-4.967 0M17 18a3.027 3.027 0 01-4.967 0"/>
+                        </svg>
+                    </div>
+                    <div class="nav-link flex items-center justify-center p-2 rounded-lg transition-colors duration-200 hover:bg-gray-700 cursor-pointer" id="auth-link">
+                        <span id="auth-text" class="text-gray-400">Login</span>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content Area - Initially loads the Home Page -->
+        <main id="main-content" class="flex-grow p-6 bg-gray-900"></main>
+
+        <!-- Dynamic Modals for Login, Notifications, etc. -->
+        <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+            <div id="auth-modal" class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full text-center relative">
+                <div id="google-auth-view">
+                    <h3 class="text-2xl font-bold mb-6">Sign In / Register</h3>
+                    <button id="google-signin-btn" class="bg-blue-600 text-white rounded-lg p-3 w-full font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12.24 10.23c-.23 0-.46-.02-.69-.05a5.55 5.55 0 00-5.55 5.55c0 .24.02.47.05.69h1.16c-.03-.17-.05-.34-.05-.51a4.39 4.39 0 014.39-4.39c.26 0 .5.04.72.09l.48-1.55zM23.95 12.04a11.97 11.97 0 00-11.91-10.97C5.3 1.07 0 6.37 0 12.82c0 5.86 4.77 10.63 10.63 10.63 5.38 0 9.87-4.01 10.59-9.15h-2.12c-.75 3.32-3.88 5.8-7.91 5.8-4.48 0-8.13-3.65-8.13-8.13s3.65-8.13 8.13-8.13c2.72 0 5.16 1.35 6.64 3.44l.11.16L12.04 12v.04l8.36.02L23.95 12.04z" clip-rule="evenodd" fill-rule="evenodd"/>
+                        </svg>
+                        <span id="google-signin-text">Sign in with Google</span>
+                    </button>
+                    <p class="mt-4 text-gray-400">or</p>
+                    <button id="show-manual-form-btn" class="text-sm text-blue-400 hover:underline mt-2">Create an account with email</button>
+                </div>
+                <div id="manual-auth-view" class="hidden">
+                    <h3 id="manual-form-title" class="text-2xl font-bold mb-6">Register</h3>
+                    <form id="auth-form" class="space-y-4">
+                        <div>
+                            <input type="text" id="manual-name" placeholder="Name" class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                            <input type="email" id="manual-email" placeholder="Email" class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div>
+                            <input type="password" id="manual-password" placeholder="Password" class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <button type="submit" id="manual-auth-btn" class="bg-blue-600 text-white rounded-lg p-3 w-full font-semibold hover:bg-blue-700 transition-colors">Register</button>
+                    </form>
+                    <button id="show-google-form-btn" class="text-sm text-blue-400 hover:underline mt-4">Back to Google Sign-in</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Box Modal for user feedback -->
+        <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-[100]">
+            <div class="bg-gray-800 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
+                <p id="message-text" class="text-lg mb-4"></p>
+                <button id="message-ok-btn" class="bg-blue-600 text-white p-2 rounded-lg w-1/2 font-semibold hover:bg-blue-700 transition-colors">OK</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        // --- Core Application Logic ---
+
+        // App State
+        let userId = null;
+        let currentUser = null;
+        let currentPage = 'home';
+        let ws = null; // WebSocket connection
+        let player = null; // YouTube player object
+        let lastSyncTime = 0; // Last time video was synced
+
+        // DOM Elements
+        const mainContent = document.getElementById('main-content');
+        const authLink = document.getElementById('auth-link');
+        const authText = document.getElementById('auth-text');
+        const homeLink = document.getElementById('home-link');
+        const profileLink = document.getElementById('profile-link');
+        const watchLink = document.getElementById('watch-link');
+        const modalContainer = document.getElementById('modal-container');
+        const googleAuthView = document.getElementById('google-auth-view');
+        const manualAuthView = document.getElementById('manual-auth-view');
+        const googleSignInBtn = document.getElementById('google-signin-btn');
+        const showManualFormBtn = document.getElementById('show-manual-form-btn');
+        const showGoogleFormBtn = document.getElementById('show-google-form-btn');
+        const manualFormTitle = document.getElementById('manual-form-title');
+        const authForm = document.getElementById('auth-form');
+        const manualName = document.getElementById('manual-name');
+        const manualEmail = document.getElementById('manual-email');
+        const manualPassword = document.getElementById('manual-password');
+        const manualAuthBtn = document.getElementById('manual-auth-btn');
+        const messageModal = document.getElementById('message-modal');
+        const messageText = document.getElementById('message-text');
+        const messageOkBtn = document.getElementById('message-ok-btn');
+        const profilePic = document.getElementById('profile-pic');
+        const profileIcon = document.getElementById('profile-icon');
+
+        const API_URL = 'http://localhost:3000/api';
+        const WS_URL = 'ws://localhost:3000';
+
+        // Helper Functions
+        function showMessageBox(message) {
+            messageText.textContent = message;
+            messageModal.classList.remove('hidden');
+            messageModal.classList.add('flex');
+        }
+
+        function hideMessageBox() {
+            messageModal.classList.add('hidden');
+            messageModal.classList.remove('flex');
+        }
+
+        function setActiveNavLink(linkId) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+                if (link.id === linkId) {
+                    link.classList.add('nav-link-active');
+                }
+            });
+        }
+
+        async function fetchUser(id) {
+            try {
+                const response = await fetch(`${API_URL}/users/search/${id}`);
+                if (!response.ok) {
+                    throw new Error('User not found.');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Fetch user error:', error);
+                return null;
+            }
+        }
+
+        // --- Auth Functions ---
+        async function handleGoogleSignIn() {
+            // For now, we'll simulate a sign-in with a mock user
+            const mockUser = {
+                id: '123456789',
+                name: 'John Doe',
+                email: 'john.doe@example.com',
+                profilePic: 'https://placehold.co/40x40/2563eb/ffffff?text=JD'
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/auth/signin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: mockUser.id,
+                        name: mockUser.name,
+                        email: mockUser.email,
+                        profilePic: mockUser.profilePic
+                    })
+                });
+                if (!response.ok) throw new Error('Failed to sign in.');
+                currentUser = mockUser;
+                userId = mockUser.id;
+                hideLoginModal();
+                updateAuthUI();
+                renderHomePage();
+                initWebSocket();
+            } catch (error) {
+                console.error('Sign-in error:', error);
+                showMessageBox('Sign-in failed. Please check the server status.');
+            }
+        }
+
+        async function handleManualRegistration(event) {
+            event.preventDefault();
+            const name = manualName.value;
+            const email = manualEmail.value;
+            const password = manualPassword.value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const user = await response.json();
+                if (!response.ok) throw new Error(user.error || 'Failed to register.');
+                
+                currentUser = user;
+                userId = user.userId;
+                showMessageBox('Registration successful! You are now logged in.');
+                hideLoginModal();
+                updateAuthUI();
+                renderHomePage();
+                initWebSocket();
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                showMessageBox(error.message);
+            }
+        }
+
+        async function handleManualLogin(event) {
+            event.preventDefault();
+            const email = manualEmail.value;
+            const password = manualPassword.value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const user = await response.json();
+                if (!response.ok) throw new Error(user.error || 'Login failed.');
+
+                currentUser = {
+                    id: user.userId,
+                    name: user.name,
+                    email: user.email,
+                    profilePic: user.profilePic
+                };
+                userId = user.userId;
+                showMessageBox('Login successful!');
+                hideLoginModal();
+                updateAuthUI();
+                renderHomePage();
+                initWebSocket();
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showMessageBox(error.message);
+            }
+        }
+
+        function handleSignOut() {
+            currentUser = null;
+            userId = null;
+            updateAuthUI();
+            renderHomePage();
+            if (ws) ws.close();
+        }
+
+        function updateAuthUI() {
+            if (currentUser) {
+                authText.textContent = 'Logout';
+                authLink.onclick = handleSignOut;
+                profileLink.classList.remove('hidden');
+                profilePic.src = currentUser.profilePic || 'https://placehold.co/40x40/2563eb/ffffff?text=U';
+                profilePic.classList.remove('hidden');
+                profileIcon.classList.add('hidden');
+                profilePic.alt = currentUser.name;
+            } else {
+                authText.textContent = 'Login';
+                authLink.onclick = renderLoginPage;
+                profileLink.classList.add('hidden');
+                profilePic.classList.add('hidden');
+                profileIcon.classList.remove('hidden');
+            }
+        }
+
+        function renderLoginPage() {
+            modalContainer.classList.remove('hidden');
+            modalContainer.classList.add('flex');
+            googleAuthView.classList.remove('hidden');
+            manualAuthView.classList.add('hidden');
+            setActiveNavLink('auth-link');
+        }
+
+        function hideLoginModal() {
+            modalContainer.classList.add('hidden');
+            modalContainer.classList.remove('flex');
+        }
+
+        // --- Page Rendering Functions ---
+
+        async function renderHomePage() {
+            mainContent.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-8 bg-gray-800 rounded-xl shadow-lg text-center">
+                    <h1 class="text-4xl font-bold mb-4">Welcome to Watch.T!</h1>
+                    <p class="text-xl mb-6 text-gray-400">Connect with friends and watch videos together.</p>
+                    <div class="w-full max-w-md">
+                        <label for="search-friends" class="block text-left text-sm font-medium text-gray-300 mb-2">Find Friends</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="search-friends" placeholder="Search by user ID" class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button id="search-btn" class="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors">Search</button>
+                        </div>
+                        <div id="search-results" class="mt-4 text-left"></div>
+                    </div>
+                    <div id="friend-requests-section" class="mt-8 w-full">
+                        <h3 class="text-2xl font-semibold mb-4 text-left">Pending Friend Requests</h3>
+                        <div id="requests-list" class="space-y-4">
+                            <!-- Requests will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            `;
+            currentPage = 'home';
+            setActiveNavLink('home-link');
+            document.getElementById('search-btn').addEventListener('click', handleFriendSearch);
+            if (currentUser) {
+                await renderFriendRequests();
+            }
+        }
+
+        async function renderProfilePage() {
+            if (!currentUser) {
+                return renderLoginPage();
+            }
+
+            const friends = await fetchFriendsList();
+            const friendsHtml = friends.length > 0 ? friends.map(friend => `
+                <div class="flex items-center bg-gray-600 p-3 rounded-lg">
+                    <img src="${friend.profile_pic || 'https://placehold.co/40x40/2563eb/ffffff?text=U'}" alt="${friend.name}" class="w-10 h-10 rounded-full mr-4">
+                    <p class="font-semibold">${friend.name}</p>
+                </div>
+            `).join('') : '<p class="text-gray-400">You have no friends yet.</p>';
+
+            mainContent.innerHTML = `
+                <div class="flex flex-col md:flex-row items-start md:items-center p-8 bg-gray-800 rounded-xl shadow-lg w-full max-w-4xl mx-auto">
+                    <!-- Profile Card -->
+                    <div class="flex flex-col items-center md:items-start md:mr-8 mb-6 md:mb-0">
+                        <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 mb-4">
+                            <img src="${currentUser.profilePic || 'https://placehold.co/150x150/2563eb/ffffff?text=U'}" alt="Profile Picture" class="w-full h-full object-cover">
+                        </div>
+                        <h2 class="text-3xl font-bold">${currentUser.name || 'Anonymous User'}</h2>
+                        <p class="text-lg text-gray-400">${currentUser.email || 'N/A'}</p>
+                        <p class="text-sm text-gray-500 mt-2">Your User ID: <span class="text-gray-300 font-mono">${userId}</span></p>
+                    </div>
+
+                    <!-- Friends List Section -->
+                    <div class="flex-grow w-full">
+                        <h3 class="text-2xl font-semibold mb-4">My Friends</h3>
+                        <div id="friends-list" class="space-y-4 bg-gray-700 p-4 rounded-lg h-96 overflow-y-auto custom-scrollbar">
+                            ${friendsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+            currentPage = 'profile';
+            setActiveNavLink('profile-link');
+        }
+
+        function renderWatchPage() {
+            if (!currentUser) {
+                return renderLoginPage();
+            }
+
+            mainContent.innerHTML = `
+                <div class="flex flex-col h-full space-y-4 lg:space-y-0 lg:flex-row lg:space-x-4 p-4">
+                    <!-- Video Player Section -->
+                    <div class="w-full lg:w-3/4 bg-gray-800 rounded-xl shadow-lg p-4 flex flex-col items-center justify-center relative">
+                        <div id="youtube-player" class="w-full h-full aspect-video bg-black rounded-lg"></div>
+                        <div class="absolute bottom-4 left-4 flex space-x-2">
+                            <input type="text" id="video-url-input" placeholder="YouTube URL or ID" class="p-2 rounded-lg bg-gray-700 text-white border border-gray-600">
+                            <button id="load-video-btn" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors">Load Video</button>
+                        </div>
+                    </div>
+
+                    <!-- Chat Section -->
+                    <div class="w-full lg:w-1/4 bg-gray-800 rounded-xl shadow-lg flex flex-col p-4">
+                        <div class="flex-grow overflow-y-auto mb-4 p-2 custom-scrollbar" id="chat-messages">
+                            <div class="text-sm text-gray-400">Welcome to the chat!</div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="chat-input" placeholder="Type a message..." class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <button id="chat-send-btn" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0">Send</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            currentPage = 'watch';
+            setActiveNavLink('watch-link');
+            initYouTubePlayer();
+        }
+
+        // --- Core Friend and Request Functions ---
+
+        async function handleFriendSearch() {
+            const searchInput = document.getElementById('search-friends');
+            const searchValue = searchInput.value.trim();
+            const searchResultsContainer = document.getElementById('search-results');
+            searchResultsContainer.innerHTML = '';
+
+            if (!searchValue) {
+                return showMessageBox('Please enter a user ID to search.');
+            }
+            if (searchValue === userId) {
+                return showMessageBox('You cannot add yourself as a friend.');
+            }
+
+            try {
+                const user = await fetchUser(searchValue);
+                if (user) {
+                    searchResultsContainer.innerHTML = `
+                        <div class="flex items-center justify-between bg-gray-700 p-4 rounded-lg shadow-md mt-4">
+                            <div class="flex items-center">
+                                <img src="${user.profile_pic || 'https://placehold.co/40x40/2563eb/ffffff?text=U'}" alt="${user.name}" class="w-10 h-10 rounded-full mr-4">
+                                <div>
+                                    <p class="font-semibold">${user.name || 'Anonymous User'}</p>
+                                    <p class="text-xs text-gray-400">ID: ${user.id}</p>
+                                </div>
+                            </div>
+                            <button class="add-friend-btn bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition-colors" data-friend-id="${user.id}">Add Friend</button>
+                        </div>
+                    `;
+                    document.querySelector('.add-friend-btn').addEventListener('click', () => sendFriendRequest(user.id));
+                } else {
+                    searchResultsContainer.innerHTML = `<p class="text-red-400 mt-4">No user found with that ID.</p>`;
+                }
+            } catch (error) {
+                showMessageBox('An error occurred during search.');
+            }
+        }
+
+        async function sendFriendRequest(receiverId) {
+            try {
+                const response = await fetch(`${API_URL}/friends/request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senderId: userId, receiverId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Failed to send request.');
+                showMessageBox('Friend request sent!');
+            } catch (error) {
+                showMessageBox(error.message);
+            }
+        }
+
+        async function renderFriendRequests() {
+            const requestsList = document.getElementById('requests-list');
+            if (!requestsList) return;
+            requestsList.innerHTML = `<p class="text-gray-400">Loading requests...</p>`;
+
+            try {
+                const response = await fetch(`${API_URL}/friends/requests/${userId}`);
+                const requests = await response.json();
+                if (requests.length === 0) {
+                    requestsList.innerHTML = `<p class="text-gray-400">No pending requests.</p>`;
+                } else {
+                    requestsList.innerHTML = requests.map(req => `
+                        <div class="flex items-center justify-between bg-gray-700 p-4 rounded-lg shadow-md">
+                            <div class="flex items-center">
+                                <img src="${req.sender_pic || 'https://placehold.co/40x40/2563eb/ffffff?text=U'}" alt="${req.sender_name}" class="w-10 h-10 rounded-full mr-4">
+                                <div>
+                                    <p class="font-semibold">${req.sender_name || 'Anonymous User'}</p>
+                                    <p class="text-xs text-gray-400">ID: ${req.sender_id}</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="accept-btn bg-green-500 text-white p-2 rounded-lg text-sm hover:bg-green-600 transition-colors" data-sender-id="${req.sender_id}">Accept</button>
+                                <button class="reject-btn bg-red-500 text-white p-2 rounded-lg text-sm hover:bg-red-600 transition-colors" data-sender-id="${req.sender_id}">Reject</button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    requestsList.querySelectorAll('.accept-btn').forEach(btn => btn.addEventListener('click', (e) => acceptFriendRequest(e.target.dataset.senderId)));
+                    requestsList.querySelectorAll('.reject-btn').forEach(btn => btn.addEventListener('click', (e) => rejectFriendRequest(e.target.dataset.senderId)));
+                }
+            } catch (error) {
+                requestsList.innerHTML = `<p class="text-red-400">Failed to load requests.</p>`;
+            }
+        }
+
+        async function acceptFriendRequest(senderId) {
+            try {
+                const response = await fetch(`${API_URL}/friends/accept/${senderId}/${userId}`, { method: 'PUT' });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Failed to accept request.');
+                showMessageBox('Friend request accepted!');
+                await renderFriendRequests();
+            } catch (error) {
+                showMessageBox(error.message);
+            }
+        }
+
+        async function rejectFriendRequest(senderId) {
+            try {
+                const response = await fetch(`${API_URL}/friends/reject/${senderId}/${userId}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Failed to reject request.');
+                showMessageBox('Friend request rejected!');
+                await renderFriendRequests();
+            } catch (error) {
+                showMessageBox(error.message);
+            }
+        }
+
+        async function fetchFriendsList() {
+            if (!userId) return [];
+            try {
+                const response = await fetch(`${API_URL}/friends/${userId}`);
+                if (!response.ok) throw new Error('Failed to fetch friends list.');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching friends list:', error);
+                return [];
+            }
+        }
+
+        // --- WebSocket and YouTube Functions ---
+
+        function initWebSocket() {
+            if (ws) return; // Already connected
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                console.log('WebSocket connected.');
+                ws.send(JSON.stringify({ type: 'register', userId }));
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'chat_message') {
+                    appendChatMessage(data.sender, data.message);
+                } else if (data.type === 'video_sync' && player) {
+                    // Sync video if a user is playing/pausing or seeking
+                    if (data.action === 'play') {
+                        player.seekTo(data.time);
+                        player.playVideo();
+                    } else if (data.action === 'pause') {
+                        player.pauseVideo();
+                    } else if (data.action === 'seek') {
+                         player.seekTo(data.time, true);
+                    }
+                }
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket disconnected. Reconnecting...');
+                ws = null;
+                setTimeout(initWebSocket, 5000); // Reconnect after 5 seconds
+            };
+
+            ws.onerror = (err) => {
+                console.error('WebSocket error:', err);
+                ws.close();
+            };
+        }
+
+        function sendMessage(message) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const msg = { type: 'chat_message', sender: currentUser.name, message };
+                ws.send(JSON.stringify(msg));
+                appendChatMessage('You', message);
+            } else {
+                showMessageBox('Not connected to chat. Please refresh the page.');
+            }
+        }
+
+        function appendChatMessage(sender, message) {
+            const chatMessages = document.getElementById('chat-messages');
+            if (chatMessages) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('mb-2');
+                messageDiv.innerHTML = `<span class="font-semibold">${sender}:</span> <span>${message}</span>`;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // YouTube Iframe API
+        function initYouTubePlayer() {
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+
+        window.onYouTubeIframeAPIReady = () => {
+            player = new YT.Player('youtube-player', {
+                height: '100%',
+                width: '100%',
+                videoId: 'dQw4w9WgXcQ', // Default video
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                },
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 1,
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'playsinline': 1
+                }
+            });
+        };
+
+        function onPlayerReady(event) {
+            const loadBtn = document.getElementById('load-video-btn');
+            const videoInput = document.getElementById('video-url-input');
+            if (loadBtn && videoInput) {
+                loadBtn.addEventListener('click', () => {
+                    const url = videoInput.value.trim();
+                    const videoId = getYouTubeVideoId(url);
+                    if (videoId) {
+                        event.target.loadVideoById(videoId);
+                    } else {
+                        showMessageBox('Invalid YouTube URL or ID.');
+                    }
+                });
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const time = player.getCurrentTime();
+                const now = Date.now();
+                if (Math.abs(now - lastSyncTime) > 1000) { // Sync at most once per second
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        ws.send(JSON.stringify({ type: 'video_sync', action: 'play', time }));
+                    } else if (event.data === YT.PlayerState.PAUSED) {
+                        ws.send(JSON.stringify({ type: 'video_sync', action: 'pause', time }));
+                    } else if (event.data === YT.PlayerState.BUFFERING) {
+                        ws.send(JSON.stringify({ type: 'video_sync', action: 'seek', time }));
+                    }
+                    lastSyncTime = now;
+                }
+            }
+        }
+        
+        function getYouTubeVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Event Listeners for Chat
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            const chatInput = document.getElementById('chat-input');
+            if (chatSendBtn && chatInput) {
+                chatSendBtn.addEventListener('click', () => {
+                    const message = chatInput.value.trim();
+                    if (message) {
+                        sendMessage(message);
+                        chatInput.value = '';
+                    }
+                });
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        chatSendBtn.click();
+                    }
+                });
+            }
+        });
+
+        // Initial App setup
+        function initApp() {
+            homeLink.addEventListener('click', (e) => { e.preventDefault(); renderHomePage(); });
+            profileLink.addEventListener('click', (e) => { e.preventDefault(); renderProfilePage(); });
+            watchLink.addEventListener('click', (e) => { e.preventDefault(); renderWatchPage(); });
+            authLink.addEventListener('click', (e) => { e.preventDefault(); renderLoginPage(); });
+            googleSignInBtn.addEventListener('click', handleGoogleSignIn);
+            messageOkBtn.addEventListener('click', hideMessageBox);
+            showManualFormBtn.addEventListener('click', () => {
+                googleAuthView.classList.add('hidden');
+                manualAuthView.classList.remove('hidden');
+                manualFormTitle.textContent = 'Register';
+                manualAuthBtn.textContent = 'Register';
+                authForm.onsubmit = handleManualRegistration;
+            });
+            showGoogleFormBtn.addEventListener('click', () => {
+                googleAuthView.classList.remove('hidden');
+                manualAuthView.classList.add('hidden');
+            });
+            renderHomePage(); // Render home page on load
+        }
+
+        window.onload = initApp;
+
+    </script>
+</body>
+</html>
