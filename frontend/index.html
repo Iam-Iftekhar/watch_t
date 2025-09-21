@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch.T</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles that don't use @apply */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .nav-link-active {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: #fff; /* text-white */
+        }
+        .nav-link-active:hover {
+            background-color: #2563eb; /* bg-blue-600 */
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #4a5568;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #6b7280;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white overflow-hidden">
+    <div id="app-container" class="flex flex-col h-screen">
+        <!-- Main Application Container -->
+        <header class="flex-shrink-0 bg-gray-800 shadow-md">
+            <nav class="flex items-center justify-between p-4">
+                <a href="#" class="text-2xl font-bold text-blue-500">Watch.T</a>
+                <div class="flex items-center space-x-4">
+                    <div class="nav-link flex items-center justify-center p-2 rounded-lg transition-colors duration-200 hover:bg-gray-700 cursor-pointer" id="home-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </div>
+                    <div class="nav-link flex items-center justify-center p-2 rounded-lg transition-colors duration-200 hover:bg-gray-700 cursor-pointer hidden" id="profile-link">
+                        <!-- Profile pic or icon will be here -->
+                        <img id="profile-pic" src="" alt="Profile" class="h-6 w-6 rounded-full hidden">
+                        <svg id="profile-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                    <div class="nav-link flex items-center justify-center p-2 rounded-lg transition-colors duration-200 hover:bg-gray-700 cursor-pointer" id="watch-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h1.033A5.027 5.027 0 0012 18m-7 0a5.027 5.027 0 016.967 0M5 18v-4m6 4v-4m-6 0h6m6 0a3.027 3.027 0 00-4.967 0M17 18a3.027 3.027 0 01-4.967 0"/>
+                        </svg>
+                    </div>
+                    <div class="nav-link flex items-center justify-center p-2 rounded-lg transition-colors duration-200 hover:bg-gray-700 cursor-pointer" id="auth-link">
+                        <span id="auth-text" class="text-gray-400">Login</span>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content Area - Initially loads the Home Page -->
+        <main id="main-content" class="flex-grow p-6 bg-gray-900"></main>
+
+        <!-- Dynamic Modals for Login, Notifications, etc. -->
+        <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+            <div id="login-modal" class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full text-center">
+                <h3 class="text-2xl font-bold mb-6">Sign In / Register</h3>
+                <button id="google-signin-btn" class="bg-blue-600 text-white rounded-lg p-3 w-full font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12.24 10.23c-.23 0-.46-.02-.69-.05a5.55 5.55 0 00-5.55 5.55c0 .24.02.47.05.69h1.16c-.03-.17-.05-.34-.05-.51a4.39 4.39 0 014.39-4.39c.26 0 .5.04.72.09l.48-1.55zM23.95 12.04a11.97 11.97 0 00-11.91-10.97C5.3 1.07 0 6.37 0 12.82c0 5.86 4.77 10.63 10.63 10.63 5.38 0 9.87-4.01 10.59-9.15h-2.12c-.75 3.32-3.88 5.8-7.91 5.8-4.48 0-8.13-3.65-8.13-8.13s3.65-8.13 8.13-8.13c2.72 0 5.16 1.35 6.64 3.44l.11.16L12.04 12v.04l8.36.02L23.95 12.04z" clip-rule="evenodd" fill-rule="evenodd"/>
+                    </svg>
+                    <span id="google-signin-text">Sign in with Google</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Message Box Modal for user feedback -->
+        <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-[100]">
+            <div class="bg-gray-800 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
+                <p id="message-text" class="text-lg mb-4"></p>
+                <button id="message-ok-btn" class="bg-blue-600 text-white p-2 rounded-lg w-1/2 font-semibold hover:bg-blue-700 transition-colors">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- We'll keep firebase imports here for now, even with module syntax, for environment compatibility -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+    <script type="module">
+        // NOTE: This script uses ES modules, which requires a local web server to run correctly.
+        // It will not work if you open the file directly in your browser.
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Core application variables
+        let app = null;
+        let db = null;
+        let auth = null;
+        let userId = null;
+        let currentPage = 'home';
+        let currentUser = null; // Store user data after login
+        let activeVideoUrl = '';
+
+        // Global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // DOM elements
+        const mainContent = document.getElementById('main-content');
+        const authLink = document.getElementById('auth-link');
+        const authText = document.getElementById('auth-text');
+        const homeLink = document.getElementById('home-link');
+        const profileLink = document.getElementById('profile-link');
+        const watchLink = document.getElementById('watch-link');
+        const modalContainer = document.getElementById('modal-container');
+        const googleSignInBtn = document.getElementById('google-signin-btn');
+        const googleSignInText = document.getElementById('google-signin-text');
+        const messageModal = document.getElementById('message-modal');
+        const messageText = document.getElementById('message-text');
+        const messageOkBtn = document.getElementById('message-ok-btn');
+        const profilePic = document.getElementById('profile-pic');
+        const profileIcon = document.getElementById('profile-icon');
+
+        // --- Core Functions ---
+
+        /**
+         * Displays a custom message box instead of alert().
+         * @param {string} message The message to display.
+         */
+        function showMessageBox(message) {
+            messageText.textContent = message;
+            messageModal.classList.remove('hidden');
+            messageModal.classList.add('flex');
+        }
+
+        /**
+         * Hides the custom message box.
+         */
+        function hideMessageBox() {
+            messageModal.classList.add('hidden');
+            messageModal.classList.remove('flex');
+        }
+
+        /**
+         * Renders the UI for the home page.
+         */
+        function renderHomePage() {
+            mainContent.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-8 bg-gray-800 rounded-xl shadow-lg text-center">
+                    <h1 class="text-4xl font-bold mb-4">Welcome to Watch.T!</h1>
+                    <p class="text-xl mb-6 text-gray-400">Connect with friends and watch videos together.</p>
+                    <div class="w-full max-w-md">
+                        <label for="search-friends" class="block text-left text-sm font-medium text-gray-300 mb-2">Find Friends</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="search-friends" placeholder="Search by name or user ID" class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button id="search-btn" class="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors">Search</button>
+                        </div>
+                        <div id="search-results" class="mt-4 text-left"></div>
+                    </div>
+                    <div id="friend-requests-section" class="mt-8 w-full">
+                        <h3 class="text-2xl font-semibold mb-4 text-left">Pending Friend Requests</h3>
+                        <div id="requests-list" class="space-y-4">
+                            <!-- Requests will be rendered here -->
+                            <p class="text-gray-400">No pending requests.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            currentPage = 'home';
+            setActiveNavLink('home-link');
+            // Re-attach the event listener to the new search button
+            document.getElementById('search-btn').addEventListener('click', handleFriendSearch);
+        }
+
+        /**
+         * Renders the UI for the user's profile page.
+         */
+        async function renderProfilePage() {
+            if (!currentUser) {
+                renderLoginPage();
+                return;
+            }
+
+            const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile/data`);
+            const userDocSnap = await getDoc(userDocRef);
+            const user = userDocSnap.data() || {
+                name: currentUser.displayName || 'Guest User',
+                email: currentUser.email || 'guest@example.com',
+                profilePic: currentUser.photoURL || 'https://placehold.co/150x150/2563eb/ffffff?text=U'
+            };
+
+            mainContent.innerHTML = `
+                <div class="flex flex-col md:flex-row items-start md:items-center p-8 bg-gray-800 rounded-xl shadow-lg w-full max-w-4xl mx-auto">
+                    <!-- Profile Card -->
+                    <div class="flex flex-col items-center md:items-start md:mr-8 mb-6 md:mb-0">
+                        <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 mb-4">
+                            <img src="${user.profilePic || 'https://placehold.co/150x150/2563eb/ffffff?text=U'}" alt="Profile Picture" class="w-full h-full object-cover">
+                        </div>
+                        <h2 class="text-3xl font-bold">${user.name || 'Anonymous User'}</h2>
+                        <p class="text-lg text-gray-400">${user.email || 'N/A'}</p>
+                        <div class="flex space-x-4 mt-4">
+                            <button id="edit-profile-btn" class="bg-gray-700 text-white rounded-lg p-2 hover:bg-gray-600 transition-colors text-sm">Edit Profile</button>
+                            <button id="change-pic-btn" class="bg-gray-700 text-white rounded-lg p-2 hover:bg-gray-600 transition-colors text-sm">Edit Profile Pic</button>
+                        </div>
+                    </div>
+
+                    <!-- Friends List Section -->
+                    <div class="flex-grow w-full">
+                        <h3 class="text-2xl font-semibold mb-4">My Friends</h3>
+                        <div id="friends-list" class="space-y-4 bg-gray-700 p-4 rounded-lg h-96 overflow-y-auto custom-scrollbar">
+                            <!-- Friends will be rendered here -->
+                            <p class="text-gray-400">You have no friends yet.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            currentPage = 'profile';
+            setActiveNavLink('profile-link');
+        }
+
+        /**
+         * Renders the UI for the "Watch Together" page.
+         */
+        function renderWatchPage() {
+            mainContent.innerHTML = `
+                <div class="flex flex-col h-full space-y-4 lg:space-y-0 lg:flex-row lg:space-x-4 p-4">
+                    <!-- Video Player Section -->
+                    <div class="w-full lg:w-3/4 bg-gray-800 rounded-xl shadow-lg p-4 flex flex-col items-center justify-center relative">
+                        <div id="youtube-player" class="w-full h-full aspect-video bg-black rounded-lg">
+                            <p class="text-gray-400 text-center text-sm pt-4">Video player placeholder</p>
+                        </div>
+                    </div>
+
+                    <!-- Chat Section -->
+                    <div class="w-full lg:w-1/4 bg-gray-800 rounded-xl shadow-lg flex flex-col p-4">
+                        <div class="flex-grow overflow-y-auto mb-4 p-2 custom-scrollbar" id="chat-messages">
+                            <div class="text-sm text-gray-400">Welcome to the chat!</div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="chat-input" placeholder="Type a message..." class="w-full p-2 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <button id="chat-send-btn" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0">Send</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            currentPage = 'watch';
+            setActiveNavLink('watch-link');
+        }
+        
+        /**
+         * Renders the UI for the Login/Logout link.
+         */
+        function updateAuthUI() {
+            if (currentUser) {
+                authText.textContent = 'Logout';
+                authLink.removeEventListener('click', renderLoginPage);
+                authLink.addEventListener('click', handleSignOut);
+                profileLink.classList.remove('hidden');
+                
+                const profilePicURL = currentUser.photoURL || 'https://placehold.co/24x24/2563eb/ffffff?text=U';
+                profilePic.src = profilePicURL;
+                profilePic.classList.remove('hidden');
+                profileIcon.classList.add('hidden');
+                profilePic.alt = currentUser.displayName || 'User Profile';
+
+            } else {
+                authText.textContent = 'Login';
+                authLink.removeEventListener('click', handleSignOut);
+                authLink.addEventListener('click', renderLoginPage);
+                profileLink.classList.add('hidden');
+
+                profilePic.classList.add('hidden');
+                profileIcon.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Renders the UI for the Login page.
+         */
+        function renderLoginPage() {
+            modalContainer.classList.remove('hidden');
+            modalContainer.classList.add('flex');
+            setActiveNavLink('auth-link');
+        }
+
+        /**
+         * Hides the login modal.
+         */
+        function hideLoginModal() {
+            modalContainer.classList.add('hidden');
+            modalContainer.classList.remove('flex');
+        }
+
+        /**
+         * Sets the active navigation link.
+         * @param {string} linkId The ID of the link to set as active.
+         */
+        function setActiveNavLink(linkId) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-link-active');
+                if (link.id === linkId) {
+                    link.classList.add('nav-link-active');
+                }
+            });
+        }
+
+        /**
+         * Initializes the Firebase app and auth state.
+         * This function will be the entry point for our JavaScript logic.
+         */
+        async function initApp() {
+            try {
+                // Initialize Firebase
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // Render the home page immediately for a better user experience
+                renderHomePage();
+                
+                // Enable debug logging for Firebase
+                // setLogLevel('debug');
+
+                // Set up auth state change listener
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        userId = user.uid;
+                        hideLoginModal();
+                        
+                        // Check if user profile exists in Firestore and create if not
+                        const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile/data`);
+                        const userDocSnap = await getDoc(userDocRef);
+
+                        if (!userDocSnap.exists()) {
+                            await setDoc(userDocRef, {
+                                name: user.displayName || 'Anonymous User',
+                                email: user.email || '',
+                                profilePic: user.photoURL || '',
+                                createdAt: new Date()
+                            });
+                            console.log('New user profile created in Firestore.');
+                        } else {
+                            console.log('Existing user profile found.');
+                        }
+
+                        console.log('User signed in:', userId);
+                    } else {
+                        currentUser = null;
+                        userId = null;
+                        console.log('No user signed in.');
+                    }
+                    // Update UI based on auth state and render the correct page
+                    updateAuthUI();
+                });
+
+                // Set up event listeners for navigation
+                homeLink.addEventListener('click', (e) => { e.preventDefault(); renderHomePage(); });
+                profileLink.addEventListener('click', (e) => { e.preventDefault(); if (currentUser) renderProfilePage(); else renderLoginPage(); });
+                watchLink.addEventListener('click', (e) => { e.preventDefault(); if (currentUser) renderWatchPage(); else renderLoginPage(); });
+                authLink.addEventListener('click', (e) => { e.preventDefault(); updateAuthUI(); });
+                googleSignInBtn.addEventListener('click', handleGoogleSignIn);
+                messageOkBtn.addEventListener('click', hideMessageBox);
+
+                // Initial sign-in with custom token or anonymously
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken)
+                        .then(() => console.log('Signed in with custom token.'))
+                        .catch(err => console.error('Error signing in with custom token:', err));
+                } else {
+                    await signInAnonymously(auth)
+                        .then(() => console.log('Signed in anonymously.'))
+                        .catch(err => console.error('Error with anonymous sign-in:', err));
+                }
+
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+            }
+        }
+
+        /**
+         * Handles Google Sign-In using a pop-up.
+         */
+        async function handleGoogleSignIn() {
+            googleSignInText.textContent = 'Signing in...';
+            googleSignInBtn.disabled = true;
+
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                console.log('Google Sign-In successful:', result.user.uid);
+            } catch (error) {
+                console.error('Google Sign-In error:', error);
+                // Handle different error types gracefully
+                if (error.code === 'auth/popup-closed-by-user') {
+                    console.log('User closed the sign-in pop-up.');
+                } else {
+                    showMessageBox('Sign-in failed. Please try again.');
+                }
+            } finally {
+                googleSignInText.textContent = 'Sign in with Google';
+                googleSignInBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Handles user sign-out.
+         */
+        async function handleSignOut() {
+            try {
+                await signOut(auth);
+                console.log('User signed out.');
+                renderHomePage(); // Go back to home page after sign-out
+            } catch (error) {
+                console.error('Error signing out:', error);
+            }
+        }
+
+        /**
+         * Handles the friend search functionality.
+         * This function queries Firestore for a user profile based on the entered user ID.
+         */
+        async function handleFriendSearch() {
+            const searchInput = document.getElementById('search-friends');
+            const searchValue = searchInput.value.trim();
+            const searchResultsContainer = document.getElementById('search-results');
+
+            searchResultsContainer.innerHTML = ''; // Clear previous results
+
+            if (!searchValue) {
+                showMessageBox('Please enter a user ID to search.');
+                return;
+            }
+
+            if (!currentUser) {
+                showMessageBox('You must be signed in to search for friends.');
+                return;
+            }
+
+            if (searchValue === userId) {
+                showMessageBox('You cannot send a friend request to yourself.');
+                return;
+            }
+            
+            let foundUser = null;
+            let friendId = null;
+
+            try {
+                // This is a direct check by user ID, which is the most efficient way.
+                // We'll remove the inefficient query to prevent errors and improve performance.
+                const userDocRef = doc(db, `artifacts/${appId}/users/${searchValue}/profile/data`);
+                const userDocSnap = await getDoc(userDocRef);
+                
+                if (userDocSnap.exists()) {
+                    foundUser = userDocSnap.data();
+                    friendId = searchValue;
+                }
+                
+                if (foundUser) {
+                    searchResultsContainer.innerHTML = `
+                        <div class="flex items-center justify-between bg-gray-700 p-4 rounded-lg shadow-md mt-4">
+                            <div class="flex items-center">
+                                <img src="${foundUser.profilePic || 'https://placehold.co/40x40/2563eb/ffffff?text=U'}" alt="${foundUser.name}" class="w-10 h-10 rounded-full mr-4">
+                                <div>
+                                    <p class="font-semibold">${foundUser.name || 'Anonymous User'}</p>
+                                    <p class="text-xs text-gray-400">ID: ${friendId}</p>
+                                </div>
+                            </div>
+                            <button class="add-friend-btn bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition-colors" data-friend-id="${friendId}">Add Friend</button>
+                        </div>
+                    `;
+                    // Re-attach the event listener to the new button
+                    document.querySelector('.add-friend-btn').addEventListener('click', (e) => {
+                        const friendIdToAdd = e.target.getAttribute('data-friend-id');
+                        sendFriendRequest(friendIdToAdd);
+                    });
+                } else {
+                    searchResultsContainer.innerHTML = `<p class="text-red-400 mt-4">No user found with that ID. Please try again.</p>`;
+                }
+
+            } catch (error) {
+                console.error("Error during friend search:", error);
+                showMessageBox("An error occurred during search. Please try again.");
+            }
+        }
+
+        /**
+         * Sends a friend request to a user.
+         * @param {string} friendId The ID of the user to send the request to.
+         */
+        async function sendFriendRequest(friendId) {
+            if (!currentUser || !friendId) {
+                showMessageBox('You must be signed in to send a friend request.');
+                return;
+            }
+
+            try {
+                // Get a reference to the 'requests' sub-collection of the public data
+                const requestsCollectionRef = collection(db, `artifacts/${appId}/public/data/requests`);
+                
+                // Add a new document for the friend request
+                await addDoc(requestsCollectionRef, {
+                    senderId: userId,
+                    receiverId: friendId,
+                    status: 'pending',
+                    createdAt: new Date(),
+                    senderName: currentUser.displayName,
+                    senderPic: currentUser.photoURL
+                });
+
+                showMessageBox('Friend request sent!');
+                console.log(`Friend request sent from ${userId} to ${friendId}.`);
+            } catch (error) {
+                console.error("Error sending friend request:", error);
+                showMessageBox("Failed to send friend request. Please try again.");
+            }
+        }
+
+        // Run the app when the window loads
+        window.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+</html>
